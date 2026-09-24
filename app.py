@@ -225,7 +225,14 @@ else:
 
     # Raw Strava Layer (Togglable)
     strava_layer = folium.FeatureGroup(name="All Raw Strava Activities", show=False)
-    folium.GeoJson(strava_gdf, style_function=lambda f: {'color': '#FF5722', 'weight': 1.5, 'opacity': 0.4}).add_to(strava_layer)
+    folium.GeoJson(
+        strava_gdf, 
+        style_function=lambda f: {
+            'color': '#FC4C02',  # Official Strava Orange
+            'weight': 2.5,       # Thicker line (was 1.5)
+            'opacity': 0.75      # More opaque (was 0.4)
+        }
+    ).add_to(strava_layer)
     strava_layer.add_to(m)
 
     folium.LayerControl(collapsed=False).add_to(m)
