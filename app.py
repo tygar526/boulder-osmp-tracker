@@ -159,8 +159,18 @@ else:
         completed_touched = gpd.overlay(touched_trails, strava_buffer, how='intersection')
         remaining_touched = gpd.overlay(touched_trails, strava_buffer, how='difference')
 
-        completed_proj = completed_touched
-        remaining_proj = pd.concat([untouched_trails, remaining_touched], ignore_index=True)
+        # --- FILTER JUNCTION STUBS (< 25 METERS / ~82 FEET) ---
+        MIN_STUB_METERS = 25
+        if not completed_touched.empty:
+            valid_mask = completed_touched.geometry.length > MIN_STUB_METERS
+            completed_proj = completed_touched[valid_mask].copy()
+            
+            # Re-attach dropped stubs to remaining trails so red lines stay continuous
+            stubs = completed_touched[~valid_mask].copy()
+            remaining_proj = pd.concat([untouched_trails, remaining_touched, stubs], ignore_index=True)
+        else:
+            completed_proj = completed_touched
+            remaining_proj = pd.concat([untouched_trails, remaining_touched], ignore_index=True)
 
         completed_df = completed_proj.to_crs(epsg=4326) if not completed_proj.empty else completed_proj
         remaining_df = remaining_proj.to_crs(epsg=4326)
