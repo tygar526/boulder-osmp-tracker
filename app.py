@@ -145,8 +145,8 @@ else:
         boulder_proj = boulder_trails.to_crs(epsg=3857)
         strava_proj = strava_boulder.to_crs(epsg=3857)
 
-        # Fast 2D polygon buffering and unioning
-        buffered_polygons = strava_proj.geometry.simplify(3.0).buffer(10)
+        # Fast 2D polygon buffering and unioning (20m buffer absorbs consumer GPS drift)
+        buffered_polygons = strava_proj.geometry.simplify(1.5).buffer(20)
         buffered_union = buffered_polygons.union_all()
         strava_buffer = gpd.GeoDataFrame(geometry=[buffered_union], crs="EPSG:3857")
 
@@ -160,7 +160,7 @@ else:
         remaining_touched = gpd.overlay(touched_trails, strava_buffer, how='difference')
 
         # --- FILTER JUNCTION STUBS (< 25 METERS / ~82 FEET) ---
-        MIN_STUB_METERS = 45
+        MIN_STUB_METERS = 25
         if not completed_touched.empty:
             valid_mask = completed_touched.geometry.length > MIN_STUB_METERS
             completed_proj = completed_touched[valid_mask].copy()
